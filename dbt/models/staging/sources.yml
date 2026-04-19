@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: stock_market_data
+    database: zoomcamp-project-493610
+    schema: stock_market_data
+    tables:
+      - name: raw_stocks
+        description: "Raw OHLCV stock data from GCS"
+        columns:
+          - name: date
+            description: "Trading date"
+          - name: ticker
+            description: "Stock ticker symbol"
+          - name: exchange
+            description: "Stock exchange (NYSE, JSE, LSE, TSE, EURONEXT, SSE)"
+          - name: close
+            description: "Closing price"
