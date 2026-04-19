@@ -5,8 +5,8 @@ sources:
     database: zoomcamp-project-493610
     schema: stock_market_data
     tables:
-      - name: raw_stocks
-        description: "Raw OHLCV stock data from GCS"
+      - name: raw_stocks_partitioned
+        description: "Raw OHLCV stock data partitioned by date, clustered by exchange and ticker"
         columns:
           - name: date
             description: "Trading date"
