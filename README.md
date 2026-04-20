@@ -1,5 +1,7 @@
 # Global Stock Market Analytics Pipeline
 
+> A production-style data engineering pipeline for global stock market analytics using GCP, dbt, and Kestra.
+
 ![GCP](https://img.shields.io/badge/Cloud-GCP-blue)
 ![dbt](https://img.shields.io/badge/Transformations-dbt-orange)
 ![Python](https://img.shields.io/badge/Language-Python-green)
@@ -34,6 +36,14 @@ yfinance API → Python Ingestion → GCS Data Lake → BigQuery Data Warehouse 
 - Transformations are handled using dbt to produce analytics-ready tables
 - Insights are visualized in Looker Studio
 
+## Pipeline Flow
+
+1. Extract stock data from yfinance API for 275 companies across 6 exchanges
+2. Store raw CSV files in GCS (data lake)
+3. Load raw data into BigQuery raw layer
+4. Transform data using dbt into analytics-ready models
+5. Visualize insights in Looker Studio dashboard
+
 ## Tech Stack
 
 | Tool | Purpose |
@@ -58,12 +68,12 @@ yfinance API → Python Ingestion → GCS Data Lake → BigQuery Data Warehouse 
 ## Dataset
 
 - Exchanges: NYSE (USA), JSE (South Africa), LSE (UK), TSE (Japan), EURONEXT (Europe), SSE (China)
-- Stocks: 275 tickers (individual company stocks) across 6 global exchanges
-- Time Range: 5 years of daily price data (2021-2026)
+- Stocks: 275 tickers (representing individual publicly traded companies) across 6 global exchanges
+- Time Range: 2021–present (~5 years of daily price data)
 - Volume: 342,103 rows of daily stock records
 - Data Fields: date, ticker, exchange, open, high, low, close, volume
 
-> A **ticker** is a short symbol identifying a company stock (e.g. AAPL = Apple, MSFT = Microsoft, NPN_JO = Naspers on JSE). Each row in the dataset represents one company's price data for one trading day, containing the Opening price, Highest price, Lowest price, Closing price and trading Volume (OHLCV).
+> A **ticker** is a short symbol identifying a company stock (e.g. AAPL = Apple, MSFT = Microsoft, NPN_JO = Naspers on JSE). Each row represents a single company's trading data for one day, containing the Opening price, Highest price, Lowest price, Closing price and trading Volume.
 
 ## Key Features
 
@@ -79,7 +89,7 @@ yfinance API → Python Ingestion → GCS Data Lake → BigQuery Data Warehouse 
 - Daily price change and percentage returns per stock
 - 7-day and 30-day moving averages per ticker
 - 30-day rolling volatility per ticker
-- Exchange-level aggregated metrics (avg price, total volume, avg volatility)
+- Exchange-level aggregated metrics (average closing price, total volume, average volatility)
 - Cross-exchange performance comparison across NYSE, JSE, LSE, TSE, EURONEXT and SSE
 
 ## dbt Models
@@ -91,7 +101,7 @@ yfinance API → Python Ingestion → GCS Data Lake → BigQuery Data Warehouse 
 ### Core Layer
 
 - **fct_stock_daily**: Daily stock metrics including price change, percentage change, 7-day moving average, 30-day moving average, and 30-day volatility. Partitioned by date and clustered by exchange and ticker.
-- **fct_exchange_summary**: Aggregated daily metrics per exchange including average price, total trading volume, and average volatility.
+- **fct_exchange_summary**: Aggregated daily metrics per exchange including average closing price, total trading volume, and average volatility.
 
 ## Data Quality
 
@@ -108,7 +118,7 @@ dbt tests ensure data integrity across all models:
 
 The Looker Studio dashboard provides:
 
-1. **KPI Cards** — Total Stocks (342,103), Average Closing Price, Total Volume, Average Volatility, Average % Change
+1. **KPI Cards** — Total Records (342,103), Number of Stocks (275), Average Closing Price, Total Volume, Average Volatility, Average % Change
 2. **Stock Price Trends by Exchange** — average closing price trends over time across all 6 exchanges (temporal)
 3. **Number of Stocks by Stock Exchange** — distribution of tracked companies per exchange (categorical)
 4. **Trading Volume Over Time** — total trading activity and market liquidity trends
@@ -117,7 +127,7 @@ Dashboard link: https://datastudio.google.com/reporting/b9c352e2-bc5b-4a1f-a861-
 
 ## Orchestration
 
-The pipeline is orchestrated using Kestra and runs daily at 1 AM. It is designed to be idempotent, ensuring safe re-runs without data duplication.
+The pipeline runs daily at 1 AM using scheduled triggers in Kestra and supports safe re-execution through idempotent design.
 
 Workflow steps:
 1. **ingest_stock_data** — fetches data from yfinance and uploads raw CSV files to GCS
