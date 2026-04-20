@@ -1,6 +1,6 @@
 # Global Stock Market Analytics Pipeline
 
-> A production-style data engineering pipeline for global stock market analytics using GCP, dbt, and Kestra.
+> Production-grade, end-to-end data pipeline for global stock market analytics across 6 stock exchanges, enabling cross-market insights using GCP, Terraform, Kestra, BigQuery, and dbt.
 
 ![GCP](https://img.shields.io/badge/Cloud-GCP-blue)
 ![dbt](https://img.shields.io/badge/Transformations-dbt-orange)
@@ -69,7 +69,7 @@ yfinance API → Python Ingestion → GCS Data Lake → BigQuery Data Warehouse 
 
 - Exchanges: NYSE (USA), JSE (South Africa), LSE (UK), TSE (Japan), EURONEXT (Europe), SSE (China)
 - Stocks: 275 tickers (representing individual publicly traded companies) across 6 global exchanges
-- Time Range: 2021–present (~5 years of daily price data)
+- Time Range: 2021–Present (~5 years of daily price data)
 - Volume: 342,103 rows of daily stock records
 - Data Fields: date, ticker, exchange, open, high, low, close, volume
 
@@ -112,6 +112,8 @@ dbt tests ensure data integrity across all models:
 - Non-null closing prices across all fact tables
 - **11/11 tests passing with zero failures or warnings**
 
+![dbt Test Results](images/dbt_tests.png)
+
 ## Dashboard
 
 ![Dashboard](images/dashboard.png)
@@ -124,6 +126,35 @@ The Looker Studio dashboard provides:
 4. **Trading Volume Over Time** — total trading activity and market liquidity trends
 
 Dashboard link: https://datastudio.google.com/reporting/b9c352e2-bc5b-4a1f-a861-37da87382c01
+
+## BigQuery Data Warehouse
+
+![BigQuery Tables](images/bigquery_tables.png)
+
+All tables are stored in the `stock_market_data` dataset in BigQuery:
+
+- `raw_stocks` — raw ingested data from GCS
+- `raw_stocks_partitioned` — partitioned by date, clustered by exchange and ticker
+- `stg_stocks` — dbt staging view
+- `fct_stock_daily` — daily stock metrics fact table
+- `fct_exchange_summary` — exchange level aggregations
+
+### Data Preview (fct_stock_daily)
+
+![BigQuery Preview](images/bigquery_preview.png)
+
+## Sample Query
+
+```sql
+SELECT 
+  exchange,
+  AVG(close) AS avg_closing_price,
+  AVG(volatility_30d) AS avg_volatility,
+  SUM(volume) AS total_volume
+FROM `zoomcamp-project-493610.stock_market_data.fct_stock_daily`
+GROUP BY exchange
+ORDER BY avg_closing_price DESC;
+```
 
 ## Orchestration
 
